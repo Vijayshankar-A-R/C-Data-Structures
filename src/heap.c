@@ -147,13 +147,14 @@ int hp_popmax(hp_t *h, void *out) {
 	hp_node *last = __get_node(h->root, o, d);
 	__swap_val(h->root, last);
 	hp_node *p = last->parent;
-	__free_node(last, h->free_ele);
-	h->size--;
 
 	if (p->left == last)
 		p->left = NULL;
 	else 
 		p->right = NULL;
+	
+	__free_node(last, h->free_ele);
+	h->size--;
 
 	__bubble_down(h->root, h->cmp);
 	return 1;

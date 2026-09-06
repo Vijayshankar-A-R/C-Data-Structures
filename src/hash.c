@@ -49,7 +49,7 @@ int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets, void (*key_
 
 	for (size_t i = 0; i < buckets; ++i) 
 		if (!ll_init(&arr[i], sizeof(__entry_t), __destroy_entry)) {
-			for (size_t j = 0; j < i; ++j) ll_free(&arr[i]);
+			for (size_t j = 0; j < i; ++j) ll_free(&arr[j]);
 			free(arr);
 			return 0;
 		}

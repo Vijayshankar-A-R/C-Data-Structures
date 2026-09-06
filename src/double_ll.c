@@ -70,6 +70,8 @@ void dll_free(double_ll_t *l) {
     __node_rec_delete(dll_next(l->head), l->__free_ele);
     l->head = NULL;
     l->tail = NULL;
+    l->elem_sz = 0;
+    l->__free_ele = NULL;
 }
 
 int dll_isempty(const double_ll_t *l) {

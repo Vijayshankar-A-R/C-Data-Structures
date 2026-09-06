@@ -17,7 +17,6 @@ static ll_node *__create_node(const void *elem, size_t elem_sz) {
         n->data = malloc(elem_sz);
         if (!n->data) {
                 __free_node(n, NULL);
-                free(n);
                 return NULL;
         }
         memcpy(n->data, elem, elem_sz);
@@ -61,6 +60,8 @@ void q_free(queue_t *q) {
 
         q->front = NULL;
 	q->rear = NULL;
+	q->elem_sz = 0;
+	q->__free_ele = NULL;
         return;
 }
 
