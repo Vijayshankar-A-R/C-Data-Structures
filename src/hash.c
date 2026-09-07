@@ -76,6 +76,7 @@ void ht_free(hash_t *h) {
 
 int ht_put(hash_t *h, const void *key, const void *val) {
 	size_t i = __hash(key, h->key_sz) % h->buckets;
+	if (ht_get(h, key, NULL)) return 0; // key is already occupied
 	__entry_t e;
 	if (!__create_entry(key, val, h->key_sz, h->val_sz, &e, &h->__ctx)) return 0;
 	return ll_inserthead(&h->arr[i], &e);
@@ -98,7 +99,8 @@ int ht_rem(hash_t *h, const void *key) {
 	size_t i = __hash(key, h->key_sz) % h->buckets;
         linklist_t *l = h->arr + i;
 	int j = 0;
-        for (ll_node *cur = ll_next(l->head); cur; cur = ll_next(NULL), j++) {
+	// linklist modified inside, so no ll_next
+        for (ll_node *cur = l->head; cur; cur = cur->next, j++) {
             __entry_t *e = (__entry_t *)cur->data;
 			if (memcmp(e->key, key, h->key_sz) == 0) {
 				__entry_t removed;
