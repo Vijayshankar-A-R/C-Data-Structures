@@ -34,29 +34,16 @@ int q_init(queue_t *q, size_t elem_sz, void (*free_ele)(void *)) {
 	return 1;
 }
 
-// if node is not NULL, returns the current node
-// if node is NULL, returns the next node from the last call
-static ll_node *__ll_next(const ll_node *node) {
-        static const ll_node *last;
-
-        last = (!node) ? last : node;
-        if (!last) return NULL;
-
-        ll_node *ret = (ll_node *)last;
-        last = last->next;
-        return ret;
-}
-
 static void __node_rec_delete(ll_node *node, void (*free_ele)(void *)) {
         if (!node) return;
-        __node_rec_delete(__ll_next(NULL), free_ele);
+        __node_rec_delete(node->next, free_ele);
         __free_node(node, free_ele);
 }
 
 void q_free(queue_t *q) {
         if (!q) return;
 
-        __node_rec_delete(__ll_next(q->front), q->__free_ele);
+        __node_rec_delete(q->front, q->__free_ele);
 
         q->front = NULL;
 	q->rear = NULL;
@@ -71,7 +58,7 @@ int q_isempty(const queue_t *q) {
 
 size_t q_size(const queue_t *q) {
         size_t s = 0;
-        for (const ll_node *cur = __ll_next(q->front); cur; cur = __ll_next(NULL)) s++;
+        for (const ll_node *cur = q->front; cur; cur = cur->next) s++;
         return s;
 }
 

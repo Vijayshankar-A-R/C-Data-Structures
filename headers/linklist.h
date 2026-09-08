@@ -25,8 +25,6 @@ struct linklist_t {
 int 	ll_init(linklist_t *l, size_t elem_sz, void (*free_ele)(void *));
 void 	ll_free(linklist_t *l);
 
-ll_node *ll_next(const ll_node *node);
-
 int	ll_isempty(const linklist_t *l);
 size_t	ll_size(const linklist_t *l);
 

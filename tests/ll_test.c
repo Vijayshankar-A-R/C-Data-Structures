@@ -55,13 +55,13 @@ static void test_int_operations(void) {
 
     {
         printf("[dbg] starting traversal\n");
-        const ll_node *node = ll_next(list.head);
+        const ll_node *node = list.head;
         int seen = 0;
         while (node) {
             printf("[dbg] visit node %d\n", *(int *)node->data);
             check(*(int *)node->data == 20, "traverse remaining int node");
             ++seen;
-            node = ll_next(NULL);
+            node = node->next;
         }
         printf("[dbg] traversal saw %d nodes\n", seen);
         check(seen == 1, "traversal saw one int node");

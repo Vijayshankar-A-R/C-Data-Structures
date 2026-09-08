@@ -80,14 +80,6 @@ For comparison-based structures (`hp_t` and `bst_t`), provide a comparator using
 - zero when values are equal
 - greater than zero when the first value is larger
 
-## Known issues
-
-`ll_next()`, `dll_next()` and `dll_prev()`: Uses global static pointers for iteration. I found out the issues related to using them only after coding extensively with it. **They should not be used and direct pointer-based iteration is recommended instead.** As far as I know, the usage of these in the repo is safe.
-However, the following limitations apply in their usage:
-- the global static pointer `last` is shared by every list and iteration and causes issues if not reset properly before every iteration
-- not thread-safe
-- causes null dereference if the node stored in `last` is freed before next call to `ll_next(NULL)`
-
 ## Repository Layout
 
 ```text

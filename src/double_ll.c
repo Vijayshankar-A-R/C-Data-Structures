@@ -36,38 +36,16 @@ int dll_init(double_ll_t *l, size_t elem_sz, void (*free_ele)(void *)) {
     return 1;
 }
 
-dll_node *dll_next(const dll_node *node) {
-    static const dll_node *last;
-
-    last = (!node) ? last : node;
-    if (!last) return NULL;
-
-    dll_node *ret = (dll_node *)last;
-    last = last->next;
-    return ret;
-}
-
-dll_node *dll_prev(const dll_node *node) {
-    static const dll_node *last;
-
-    last = (!node) ? last : node;
-    if (!last) return NULL;
-
-    dll_node *ret = (dll_node *)last;
-    last = last->prev;
-    return ret;
-}
-
 static void __node_rec_delete(dll_node *node, void (*free_ele)(void *)) {
     if (!node) return;
-    __node_rec_delete(dll_next(NULL), free_ele);
+    __node_rec_delete(node->next, free_ele);
     __free_node(node, free_ele);
 }
 
 void dll_free(double_ll_t *l) {
     if (!l) return;
 
-    __node_rec_delete(dll_next(l->head), l->__free_ele);
+    __node_rec_delete(l->head, l->__free_ele);
     l->head = NULL;
     l->tail = NULL;
     l->elem_sz = 0;
@@ -81,7 +59,7 @@ int dll_isempty(const double_ll_t *l) {
 
 size_t dll_size(const double_ll_t *l) {
     size_t s = 0;
-    for (const dll_node *cur = dll_next(l->head); cur; cur = dll_next(NULL)) s++;
+    for (const dll_node *cur = l->head; cur; cur = cur->next) s++;
     return s;
 }
 
@@ -179,9 +157,9 @@ int dll_delete(double_ll_t *l, size_t i, void *out_elem) {
     if (dll_isempty(l) || !out_elem) return 0;
     if (i == 0) return dll_deletehead(l, out_elem);
 
-    dll_node *cur = dll_next(l->head);
+    dll_node *cur = l->head;
     while (cur && i > 0) {
-        cur = dll_next(NULL);
+        cur = cur->next;
         i--;
     }
     if (!cur) return 0;
@@ -206,9 +184,9 @@ int dll_getelem(const double_ll_t *l, size_t i, void *out_elem) {
     if (dll_isempty(l) || !out_elem) return 0;
     if (i == 0) return dll_gethead(l, out_elem);
 
-    dll_node *cur = dll_next(l->head);
+    dll_node *cur = l->head;
     while (cur && i > 0) {
-        cur = dll_next(NULL);
+        cur = cur->next;
         i--;
     }
     if (!cur) return 0;

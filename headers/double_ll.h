@@ -23,9 +23,6 @@ typedef struct {
 int 	dll_init(double_ll_t *l, size_t elem_sz, void (*free_ele)(void *));
 void 	dll_free(double_ll_t *l);
 
-dll_node	*dll_next(const dll_node *node);
-dll_node	*dll_prev(const dll_node *node);
-
 int 	dll_isempty(const double_ll_t *l);
 size_t 	dll_size(const double_ll_t *l);
 

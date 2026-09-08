@@ -85,7 +85,7 @@ int ht_put(hash_t *h, const void *key, const void *val) {
 int ht_get(const hash_t *h, const void *key, void *out) {
 	size_t i = __hash(key, h->key_sz) % h->buckets;
 	linklist_t *l = h->arr + i;
-	for (ll_node *cur = ll_next(l->head); cur; cur = ll_next(NULL)) {
+	for (ll_node *cur = l->head; cur; cur = cur->next) {
 		__entry_t *e = (__entry_t *)cur->data;
 		if (memcmp(e->key, key, h->key_sz) == 0) {
 			if (out) memcpy(out, e->val, h->val_sz);
@@ -99,7 +99,6 @@ int ht_rem(hash_t *h, const void *key) {
 	size_t i = __hash(key, h->key_sz) % h->buckets;
         linklist_t *l = h->arr + i;
 	int j = 0;
-	// linklist modified inside, so no ll_next
         for (ll_node *cur = l->head; cur; cur = cur->next, j++) {
             __entry_t *e = (__entry_t *)cur->data;
 			if (memcmp(e->key, key, h->key_sz) == 0) {
