@@ -13,7 +13,14 @@ A collection of generic data structures implemented in C. Elements are stored as
 - Binary search tree / AVL tree: `bst_t`
 - Hash table: `hash_t` (requires `linklist.h`)
 
-Public headers are in `headers/`, implementations are in `src/`, tests are in `tests/`, and compiled test executables are stored in `bin/`.
+The project uses stb-style single-header implementations. Each header contains its public API and the implementation behind a matching `*_IMPLEMENTATION` define, so the typical pattern is:
+
+```c
+#define BST_IMPLEMENTATION
+#include "bst.h"
+```
+
+The headers live at the repository root, and test programs are in `tests/` with compiled executables stored in `bin/`.
 
 ## Requirements
 
@@ -23,40 +30,46 @@ Public headers are in `headers/`, implementations are in `src/`, tests are in `t
 
 ## Include Paths
 
-Source and test files include headers by name, for example:
+Tests and user code include the project headers by name. From the project root, add the repo root to the include path:
 
 ```c
-#include "bst.h"
+#include "stack.h"
 ```
 
-Add the `headers/` directory to the compiler include path with `-Iheaders`.
+Compile with `-I.` so GCC can resolve the root-level headers.
+If running outside the project repository, compile with `-Idirectory_name`.
 
 ## Build and Run Tests
 
 Build an individual test from the repository root:
 
 ```sh
-gcc -Wall -Wextra -Iheaders src/bst.c tests/bst_test.c -o bin/bst_test
+gcc -Wall -Wextra -I. tests/bst_test.c -o bin/bst_test
 bin/bst_test
 ```
 
-For the stress test, compile only the implementations it uses. The array-backed stack and linked-list stack both export the same `stack_*` symbols, so they should not be linked together:
+The test source already defines the matching implementation macro before including the header:
+
+```c
+#define BST_IMPLEMENTATION
+#include "bst.h"
+```
+
+For the stress test, compile the test file directly with the relevant headers included.:
 
 ```sh
-gcc -Wall -Wextra -Iheaders \
-  src/queue.c src/heap.c src/hash.c src/double_ll.c src/linklist.c \
-  tests/dsa_stress_test.c -lm \
-  -o bin/dsa_stress_test
+gcc -Wall -Wextra -I. tests/dsa_stress_test.c -lm -o bin/dsa_stress_test
 bin/dsa_stress_test
 ```
 
-Other tests follow the same pattern: include the relevant source files, add `-Iheaders`, and write the executable to `bin/`.
+Other tests follow the same pattern: include the root-level header, define the matching `_IMPLEMENTATION` macro, add `-I.`, and write the executable to `bin/`.
 
 ## Using the Library
 
-Include the header for the structure you need and link its implementation file. For example:
+Define the implementation macro for the data structure you want to use and include the header. For example:
 
 ```c
+#define STACK_IMPLEMENTATION
 #include "stack.h"
 
 stack_t stack;
@@ -67,7 +80,7 @@ stack_push(&stack, &value);
 stack_free(&stack);
 ```
 
-Initialization functions generally return nonzero on success and zero on failure. Check the individual headers for the complete API and return-value behavior.
+This is the project’s stb-style pattern: the implementation is compiled when the matching macro is set before the header is included. Initialization functions generally return nonzero on success and zero on failure. Check the individual headers for the complete API and return-value behavior.
 
 ## Memory Management
 
@@ -82,10 +95,9 @@ For comparison-based structures (`hp_t` and `bst_t`), provide a comparator using
 ## Repository Layout
 
 ```text
-headers/   Public header files
-src/       Implementations
+*.h        stb-style single-header implementations
 tests/     Test programs
-bin/       Compiled test executables
+bin/      Compiled test executables
 ```
 
 ## AI Notice

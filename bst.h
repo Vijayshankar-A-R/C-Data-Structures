@@ -1,6 +1,42 @@
+// bst.h
+
+#ifndef BST_H
+#define BST_H
+
+#include <stddef.h>
+
+typedef struct bst_node bst_node;
+typedef struct bst_t bst_t;
+
+int 	bst_init(bst_t *b, size_t elem_sz, int (*cmp)(const void *, const void *), void (*free_ele)(void *));
+void	bst_free(bst_t *b);
+
+int	bst_insert(bst_t *b, const void *elem);
+int	bst_delete(bst_t *b, const void *elem);
+int	bst_contains(const bst_t *b, const void *elem);
+
+//int	bst_preorder(bst_t *b, void *out);
+//int	bst_inorder(bst_t *b, void *out);
+//int	bst_postorder(bst_t *b, void *out);
+
+#ifdef BST_IMPLEMENTATION
+
+struct bst_t {
+	bst_node *root;
+	size_t elem_sz;
+	int (*cmp)(const void *, const void *);
+	void (*free_ele)(void *);
+};
+
+struct bst_node {
+	void *val;
+	bst_node *left;
+	bst_node *right;
+	size_t __ht; // AVL implementation
+};
+
 #include <stdlib.h>
 #include <string.h>
-#include "bst.h"
 
 int bst_init(bst_t *b, size_t elem_sz, int (*cmp)(const void *, const void *), void (*free_ele)(void *)) {
 	if (elem_sz == 0 || !cmp || !b) return 0;
@@ -34,7 +70,7 @@ void bst_free(bst_t *b) {
 	b->free_ele = NULL;
 }
 
-static bst_node *__create_node(const void *elem, size_t elem_sz) {
+static bst_node *__bst_create_node(const void *elem, size_t elem_sz) {
 	bst_node *n = (bst_node *)malloc(sizeof(bst_node));
 	if (!n) return NULL;
 	void *val = malloc(elem_sz);
@@ -108,12 +144,12 @@ static bst_node *__rebal(bst_node *n) {
 	int bf = __bf(n);
 
 	// left heavy
-	if (bf > 1) { 
+	if (bf > 1) {
 		if (__bf(n->left) < 0)
 			n->left = __rot_left(n->left); // LR
 		return __rot_right(n); // LL
 	}
-	
+
 	// right heavy
 	if (bf < -1) {
 		if (__bf(n->right) > 0)
@@ -125,8 +161,8 @@ static bst_node *__rebal(bst_node *n) {
 }
 
 static bst_node *__rec_insert(bst_node *n, const void *elem, size_t elem_sz, int (*cmp)(const void *, const void *)) {
-	if (!n) 
-		return __create_node(elem, elem_sz);
+	if (!n)
+		return __bst_create_node(elem, elem_sz);
 
 	int k = cmp(elem, n->val);
 	if (k == 0)
@@ -184,7 +220,7 @@ static bst_node *__rec_delete(bst_node *n, const void *elem, size_t elem_sz, int
 		bst_node *suc = n->right;
 		while (suc->left) suc = suc->left;
 
-		if (free_ele) free_ele(n->val);	
+		if (free_ele) free_ele(n->val);
 		memcpy(n->val, suc->val, elem_sz);
 		n->right = __rec_delete(n->right, suc->val, elem_sz, cmp, free_ele);
 	}
@@ -194,7 +230,10 @@ static bst_node *__rec_delete(bst_node *n, const void *elem, size_t elem_sz, int
 
 int bst_delete(bst_t *b, const void *elem) {
 	if (!b) return 0;
-	
+
 	b->root = __rec_delete(b->root, elem, b->elem_sz, b->cmp, b->free_ele);
 	return 1; // Doesnt guarantee success
 }
+
+#endif // BST_IMPLEMENTATION
+#endif // BST_H

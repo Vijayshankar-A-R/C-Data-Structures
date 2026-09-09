@@ -1,6 +1,35 @@
+// list.h
+
+#ifndef LIST_H
+#define LIST_H
+
+#include <stddef.h> // size_t
+
+typedef struct list_t list_t;
+
+int	list_init(list_t *l, size_t initial_cap, size_t elem_sz, void (*free_ele)(void *));
+void	list_free(list_t *l);
+
+size_t	list_size(const list_t *l);
+
+int	add(list_t *l, const void *elem);
+
+int	set(list_t *l, size_t i, const void *elem);
+
+int	get(const list_t *l, size_t i, void *out);
+
+#ifdef LIST_IMPLEMENTATION
+
+struct list_t{
+	unsigned char *data;
+	size_t cap;
+	size_t size;
+	size_t elem_sz;
+	void (*__free_ele)(void *);
+};
+
 #include <stdlib.h>
 #include <string.h>
-#include "list.h"
 
 int list_init(list_t *l, size_t initial_cap, size_t elem_sz, void (*free_ele)(void *)) {
 	if (!l || initial_cap == 0 || elem_sz == 0) return 0;
@@ -74,3 +103,5 @@ int get(const list_t *l, size_t i, void *out) {
 	return 1;
 }
 
+#endif // LIST_IMPLEMENTATION
+#endif // LIST_H

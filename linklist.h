@@ -1,8 +1,49 @@
+// linklist.h
+
+#ifndef LINKLIST_H
+#define LINKLIST_H
+
+#include <stddef.h> //size_t
+
+typedef struct linklist_t linklist_t;
+
+typedef struct ll_node ll_node;
+
+int 	ll_init(linklist_t *l, size_t elem_sz, void (*free_ele)(void *));
+void 	ll_free(linklist_t *l);
+
+int	ll_isempty(const linklist_t *l);
+size_t	ll_size(const linklist_t *l);
+
+int 	ll_insert(linklist_t *l, size_t i, const void *elem);
+int	ll_inserthead(linklist_t *l, const void *elem);
+int 	ll_inserttail(linklist_t *l, const void *elem);
+
+int	ll_delete(linklist_t *l, size_t i, void *out_elem);
+int	ll_deletehead(linklist_t *l, void *out_elem);
+int	ll_deletetail(linklist_t *l, void *out_elem);
+
+int 	ll_getelem(const linklist_t *l, size_t i, void *out_elem);
+int 	ll_gethead(const linklist_t *l, void *out_elem);
+int	ll_gettail(const linklist_t *l, void *out_elem);
+
+#ifdef LL_IMPLEMENTATION
+
+struct ll_node {
+        void    *data;
+        struct ll_node *next;
+};
+
+struct linklist_t {
+        ll_node *head;
+        size_t  elem_sz;
+        void (*__free_ele)(void *);
+};
+
 #include <stdlib.h>
 #include <string.h>
-#include "linklist.h"
 
-static void __free_node(ll_node *n, void (*free_ele)(void *)) {
+static void __ll_free_node(ll_node *n, void (*free_ele)(void *)) {
 	if (!n) return;
 	if (n->data) {
 		if (free_ele) free_ele(n->data);
@@ -11,12 +52,12 @@ static void __free_node(ll_node *n, void (*free_ele)(void *)) {
 	free(n);
 }
 
-static ll_node *__create_node(const void *elem, size_t elem_sz) {
+static ll_node *__ll_create_node(const void *elem, size_t elem_sz) {
 	ll_node *n = (ll_node *)malloc(sizeof(ll_node));
 	if (!n) return NULL;
 	n->data = malloc(elem_sz);
 	if (!n->data) {
-		__free_node(n, NULL);
+		__ll_free_node(n, NULL);
 		return NULL;
 	}
 	memcpy(n->data, elem, elem_sz);
@@ -33,16 +74,16 @@ int ll_init(linklist_t *l, size_t elem_sz, void (*free_ele)(void *)) {
 	return 1;
 }
 
-static void __node_rec_delete(ll_node *node, void (*free_ele)(void *)) {
+static void __ll_node_rec_delete(ll_node *node, void (*free_ele)(void *)) {
 	if (!node) return;
-	__node_rec_delete(node->next, free_ele);
-	__free_node(node, free_ele);
+	__ll_node_rec_delete(node->next, free_ele);
+	__ll_free_node(node, free_ele);
 }
 
 void ll_free(linklist_t *l) {
 	if (!l) return;
 
-	__node_rec_delete(l->head, l->__free_ele);
+	__ll_node_rec_delete(l->head, l->__free_ele);
 
 	l->head = NULL;
 	return;
@@ -61,7 +102,7 @@ size_t ll_size(const linklist_t *l) {
 int ll_inserthead(linklist_t *l, const void *elem) {
 	if (!l) return 0;
 
-	ll_node *n = __create_node(elem, l->elem_sz);
+	ll_node *n = __ll_create_node(elem, l->elem_sz);
 	if (!n) return 0;
 
 	n->next = l->head;
@@ -74,7 +115,7 @@ int ll_inserttail(linklist_t *l, const void *elem) {
 
 	if (!l->head) return ll_inserthead(l, elem);
 
-	ll_node *n = __create_node(elem, l->elem_sz);
+	ll_node *n = __ll_create_node(elem, l->elem_sz);
 	if (!n) return 0;
 
 	ll_node *prev;
@@ -93,7 +134,7 @@ int ll_insert(linklist_t *l, size_t i, const void *elem) {
 	for (prev =l->head; --i; prev = prev ? prev->next : NULL);
 	if (!prev) return 0;
 
-	ll_node *n = __create_node(elem, l->elem_sz);
+	ll_node *n = __ll_create_node(elem, l->elem_sz);
 	if (!n) return 0;
 
 	n->next = prev->next;
@@ -107,7 +148,7 @@ int ll_deletehead(linklist_t *l, void *out_elem) {
 	ll_node *tmp = l->head;
 	l->head = tmp->next;
 	memcpy(out_elem, tmp->data, l->elem_sz);
-	__free_node(tmp, l->__free_ele);
+	__ll_free_node(tmp, l->__free_ele);
 	return 1;
 }
 
@@ -122,7 +163,7 @@ int ll_deletetail(linklist_t *l, void *out_elem) {
 	tmp = prev->next;
 	prev->next = NULL;
 	memcpy(out_elem, tmp->data, l->elem_sz);
-	__free_node(tmp, l->__free_ele);
+	__ll_free_node(tmp, l->__free_ele);
 	return 1;
 }
 
@@ -134,12 +175,12 @@ int ll_delete(linklist_t *l, size_t i, void *out_elem) {
 	ll_node *prev, *tmp;
 	for (prev = l->head; --i; prev = prev ? prev->next : NULL);
 	if (!prev) return 0;
-	
+
 	tmp = prev->next;
 	if (!tmp) return 0;
 	prev->next = tmp->next;
 	memcpy(out_elem, tmp->data, l->elem_sz);
-	__free_node(tmp, l ->__free_ele);
+	__ll_free_node(tmp, l->__free_ele);
 	return 1;
 }
 
@@ -149,7 +190,7 @@ int ll_gethead(const linklist_t *l, void *out_elem) {
 	return 1;
 }
 
-int ll_gettail(const linklist_t *l, void *out_elem) {	
+int ll_gettail(const linklist_t *l, void *out_elem) {
 	if (ll_isempty(l) || !out_elem) return 0;
 	const ll_node *last;
 	for (last = l->head; last->next; last = last->next);
@@ -169,3 +210,8 @@ int ll_getelem(const linklist_t *l, size_t i, void *out_elem) {
 	memcpy(out_elem, n->data, l->elem_sz);
 	return 1;
 }
+
+
+#endif // LL_IMPLEMENTATION
+
+#endif // LINKLIST_H

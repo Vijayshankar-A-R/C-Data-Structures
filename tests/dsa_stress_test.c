@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#define QUEUE_IMPLEMENTATION
+#define HEAP_IMPLEMENTATION
+#define HASH_IMPLEMENTATION
 #include "queue.h"
 #include "heap.h"
 #include "hash.h"

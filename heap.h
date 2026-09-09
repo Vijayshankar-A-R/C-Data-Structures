@@ -1,11 +1,44 @@
+// heap.h
+
+#ifndef HEAP_H
+#define HEAP_H
+
+#include <stddef.h> // size_t
+
+typedef struct heap_node hp_node;
+typedef struct heap_t hp_t;
+
+int	hp_init(hp_t *h, size_t elem_sz, int (*cmp)(const void *, const void *), void (*free_ele)(void *));
+void	hp_free(hp_t *h);
+
+int	hp_insert(hp_t *h, const void *elem);
+int	hp_peek(const hp_t *h, void *out);
+int	hp_popmax(hp_t *h, void *out);
+
+#ifdef HEAP_IMPLEMENTATION
+
+struct heap_t {
+	hp_node *root;
+	size_t elem_sz;
+	size_t size;
+	int (*cmp)(const void *, const void *);
+	void (*free_ele)(void *);
+};
+
+struct heap_node {
+	void *val;
+	hp_node *left;
+	hp_node *right;
+	hp_node *parent;
+};
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "heap.h"
 
 int hp_init(hp_t *h, size_t elem_sz, int (*cmp)(const void *, const void *), void (*free_ele)(void *)) {
 	if (!h || !cmp || elem_sz == 0) return 0;
-	
+
 	h->root = NULL;
 	h->elem_sz = elem_sz;
 	h->size = 0;
@@ -14,7 +47,7 @@ int hp_init(hp_t *h, size_t elem_sz, int (*cmp)(const void *, const void *), voi
 	return 1;
 }
 
-static void __free_node(hp_node *n, void (*free_ele)(void *)) {
+static void __hp_free_node(hp_node *n, void (*free_ele)(void *)) {
 	if (!n) return;
 	if (free_ele) free_ele(n->val);
 	free(n->val);
@@ -25,7 +58,7 @@ static void __rec_free(hp_node *n, void (*free_ele)(void *)) {
 	if (!n) return;
 	__rec_free(n->left, free_ele);
 	__rec_free(n->right, free_ele);
-	__free_node(n, free_ele);
+	__hp_free_node(n, free_ele);
 }
 
 void hp_free(hp_t *h) {
@@ -38,7 +71,7 @@ void hp_free(hp_t *h) {
 	h->free_ele = NULL;
 }
 
-static hp_node *__create_node(const void *elem, size_t elem_sz) {
+static hp_node *__hp_create_node(const void *elem, size_t elem_sz) {
 	/* allocate node struct correctly */
 	hp_node *n = (hp_node *)malloc(sizeof(hp_node));
 	if (!n) return NULL;
@@ -89,7 +122,7 @@ static hp_node *__get_node(const hp_node *n, size_t i, size_t d) {
 
 	size_t div = (size_t)1 << (d - 1); // 2 ^ (d - 1)
 
-	if (i >= div) 
+	if (i >= div)
 		return __get_node(n->right, i - div, d - 1); //  Right subtree
 	else
 		return __get_node(n->left, i, d - 1); // Left subtree
@@ -98,7 +131,7 @@ static hp_node *__get_node(const hp_node *n, size_t i, size_t d) {
 
 int hp_insert(hp_t *h, const void *elem) {
 	if (!h || !elem) return 0;
-	hp_node *n = __create_node(elem, h->elem_sz);
+	hp_node *n = __hp_create_node(elem, h->elem_sz);
 	if (!n) return 0;
 
 	h->size++;
@@ -134,7 +167,7 @@ int hp_popmax(hp_t *h, void *out) {
 	memcpy(out, h->root->val, h->elem_sz);
 
 	if (h->size == 1) {
-		__free_node(h->root, h->free_ele);
+		__hp_free_node(h->root, h->free_ele);
 		h->root = NULL;
 		h->size = 0;
 		return 1;
@@ -150,13 +183,15 @@ int hp_popmax(hp_t *h, void *out) {
 
 	if (p->left == last)
 		p->left = NULL;
-	else 
+	else
 		p->right = NULL;
-	
-	__free_node(last, h->free_ele);
+
+	__hp_free_node(last, h->free_ele);
 	h->size--;
 
 	__bubble_down(h->root, h->cmp);
 	return 1;
 }
 
+#endif // HEAP_IMPLEMENTATION
+#endif // HEAP_H

@@ -1,6 +1,49 @@
+// hash.h
+
+#ifndef HASH_H
+#define HASH_H
+
+#ifdef HASH_IMPLEMENTATION
+	#ifndef LL_IMPLEMENTATION
+		#define LL_IMPLEMENTATION
+	#endif // LL_IMPLEMENTATION
+#endif // HASH_IMPLEMENTATION
+
+#include "linklist.h"
+
+typedef struct hash_t hash_t;
+
+int	ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets, void (*key_free)(void *), void (*val_free)(void *));
+void	ht_free(hash_t *h);
+
+int	ht_put(hash_t *h, const void *key, const void *val);
+int	ht_get(const hash_t *h, const void *key, void *out);
+int	ht_rem(hash_t *h, const void *key);
+
+#ifdef HASH_IMPLEMENTATION
+
+struct __ctx {
+		void (*key_free)(void *);
+		void (*val_free)(void *);
+};
+
+typedef struct __entry_t __entry_t;
+struct __entry_t{
+	void 	*key;
+	void 	*val;
+	struct __ctx *ctx;
+};
+
+struct hash_t{
+	linklist_t *arr;	// hash_t is an array of linked-list of __entry_t
+	size_t 	key_sz;
+	size_t	val_sz;
+	size_t	buckets;
+	struct __ctx __ctx;
+};
+
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
 
 // djb2 hash
 static size_t __hash(const void *key, size_t size) {
@@ -47,7 +90,7 @@ int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets, void (*key_
 	linklist_t *arr = (linklist_t *)calloc(buckets, sizeof(linklist_t));
 	if (!arr) return 0;
 
-	for (size_t i = 0; i < buckets; ++i) 
+	for (size_t i = 0; i < buckets; ++i)
 		if (!ll_init(&arr[i], sizeof(__entry_t), __destroy_entry)) {
 			for (size_t j = 0; j < i; ++j) ll_free(&arr[j]);
 			free(arr);
@@ -66,7 +109,7 @@ void ht_free(hash_t *h) {
 	if (!h) return;
 	for (size_t i = 0; i < h->buckets; ++i) ll_free(&h->arr[i]);
 	free(h->arr);
-	
+
 	h->arr = NULL;
 	h->key_sz = 0;
 	h->val_sz = 0;
@@ -108,3 +151,6 @@ int ht_rem(hash_t *h, const void *key) {
         }
         return 0;
 }
+
+#endif // HASH_IMPLEMENTATION
+#endif // HASH_H

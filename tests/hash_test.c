@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define HASH_IMPLEMENTATION
 #include "hash.h"
 
 static void check(int condition, const char *message) {

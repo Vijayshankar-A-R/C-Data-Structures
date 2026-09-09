@@ -1,9 +1,51 @@
-#include <stdio.h>
+// double_ll.h
+
+#ifndef DOUBLE_LL_H
+#define DOUBLE_LL_H
+
+#include <stddef.h> // size_t
+
+typedef struct dll_node dll_node;
+typedef struct double_ll_t double_ll_t;
+
+int 	dll_init(double_ll_t *l, size_t elem_sz, void (*free_ele)(void *));
+void 	dll_free(double_ll_t *l);
+
+int 	dll_isempty(const double_ll_t *l);
+size_t 	dll_size(const double_ll_t *l);
+
+dll_node	*dll_insert(double_ll_t *l, size_t i, const void *elem);
+dll_node 	*dll_inserthead(double_ll_t *l, const void *elem);
+dll_node	*dll_inserttail(double_ll_t *l, const void *elem);
+
+int dll_delete(double_ll_t *l, size_t i, void *out_elem);
+int dll_deletehead(double_ll_t *l, void *out_elem);
+int dll_deletetail(double_ll_t *l, void *out_elem);
+int dll_delete_node(double_ll_t *l, dll_node *n, void *out_elem);
+
+int dll_getelem(const double_ll_t *l, size_t i, void *out_elem);
+int dll_gethead(const double_ll_t *l, void *out_elem);
+int dll_gettail(const double_ll_t *l, void *out_elem);
+
+#ifdef DLL_IMPLEMENTATION
+
+struct dll_node {
+    void *data;
+    struct dll_node *next;
+    struct dll_node *prev;
+};
+
+struct double_ll_t {
+    dll_node *head;
+    dll_node *tail;
+    size_t elem_sz;
+    void (*__free_ele)(void *);
+};
+
 #include <stdlib.h>
 #include <string.h>
-#include "double_ll.h"
 
-static void __free_node(dll_node *n, void (*free_ele)(void *)) {
+static void __dll_free_node(dll_node *n, void (*free_ele)(void *)) {
     if (!n) return;
     if (n->data) {
         if (free_ele) free_ele(n->data);
@@ -12,12 +54,12 @@ static void __free_node(dll_node *n, void (*free_ele)(void *)) {
     free(n);
 }
 
-static dll_node *__create_node(const void *elem, size_t elem_sz) {
+static dll_node *__dll_create_node(const void *elem, size_t elem_sz) {
     dll_node *n = (dll_node *)malloc(sizeof(dll_node));
     if (!n) return NULL;
     n->data = malloc(elem_sz);
     if (!n->data) {
-        __free_node(n, NULL);
+        __dll_free_node(n, NULL);
         return NULL;
     }
     memcpy(n->data, elem, elem_sz);
@@ -36,16 +78,16 @@ int dll_init(double_ll_t *l, size_t elem_sz, void (*free_ele)(void *)) {
     return 1;
 }
 
-static void __node_rec_delete(dll_node *node, void (*free_ele)(void *)) {
+static void __dll_node_rec_delete(dll_node *node, void (*free_ele)(void *)) {
     if (!node) return;
-    __node_rec_delete(node->next, free_ele);
-    __free_node(node, free_ele);
+    __dll_node_rec_delete(node->next, free_ele);
+    __dll_free_node(node, free_ele);
 }
 
 void dll_free(double_ll_t *l) {
     if (!l) return;
 
-    __node_rec_delete(l->head, l->__free_ele);
+    __dll_node_rec_delete(l->head, l->__free_ele);
     l->head = NULL;
     l->tail = NULL;
     l->elem_sz = 0;
@@ -66,7 +108,7 @@ size_t dll_size(const double_ll_t *l) {
 dll_node *dll_inserthead(double_ll_t *l, const void *elem) {
     if (!l) return NULL;
 
-    dll_node *n = __create_node(elem, l->elem_sz);
+    dll_node *n = __dll_create_node(elem, l->elem_sz);
     if (!n) return NULL;
 
     n->next = l->head;
@@ -84,7 +126,7 @@ dll_node *dll_inserttail(double_ll_t *l, const void *elem) {
     if (!l) return NULL;
     if (!l->head) return dll_inserthead(l, elem);
 
-    dll_node *n = __create_node(elem, l->elem_sz);
+    dll_node *n = __dll_create_node(elem, l->elem_sz);
     if (!n) return NULL;
 
     l->tail->next = n;
@@ -104,7 +146,7 @@ dll_node *dll_insert(double_ll_t *l, size_t i, const void *elem) {
     }
     if (!cur) return NULL;
 
-    dll_node *n = __create_node(elem, l->elem_sz);
+    dll_node *n = __dll_create_node(elem, l->elem_sz);
     if (!n) return NULL;
 
     n->next = cur->next;
@@ -137,7 +179,7 @@ int dll_delete_node(double_ll_t *l, dll_node *n, void *out_elem) {
     if (out_elem) {
         memcpy(out_elem, n->data, l->elem_sz);
     }
-    __free_node(n, l->__free_ele);
+    __dll_free_node(n, l->__free_ele);
     return 1;
 }
 
@@ -194,3 +236,7 @@ int dll_getelem(const double_ll_t *l, size_t i, void *out_elem) {
     memcpy(out_elem, cur->data, l->elem_sz);
     return 1;
 }
+
+
+#endif // DLL_IMPLEMENTATION
+#endif // DOUBLE_LL_H
