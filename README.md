@@ -8,7 +8,7 @@ A collection of generic data structures implemented in C. Elements are stored as
 - Singly linked list: `linklist_t`
 - Doubly linked list: `double_ll_t`
 - Stack: `stack_t` (requires `linklist.h`)
-- Queue: `queue_t` (requires `linklist.h`)
+- Queue: `queue_t` (requires `double_ll.h`)
 - Max heap: `hp_t` (requires `math.h`)
 - Binary search tree / AVL tree: `bst_t`
 - Hash table: `hash_t` (requires `linklist.h`)
@@ -44,7 +44,7 @@ For the stress test, compile only the implementations it uses. The array-backed 
 
 ```sh
 gcc -Wall -Wextra -Iheaders \
-  src/queue.c src/heap.c src/hash.c src/linklist.c \
+  src/queue.c src/heap.c src/hash.c src/double_ll.c src/linklist.c \
   tests/dsa_stress_test.c -lm \
   -o bin/dsa_stress_test
 bin/dsa_stress_test
