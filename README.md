@@ -7,12 +7,11 @@ A collection of generic data structures implemented in C. Elements are stored as
 - Dynamic array: `list_t`
 - Singly linked list: `linklist_t`
 - Doubly linked list: `double_ll_t`
-- Array-backed stack: `stack_t` from `stack.h`
-- Linked-list stack: `stack_t` from `ll_stack.h`
-- Queue: `queue_t`
-- Max heap: `hp_t`
+- Stack: `stack_t` (requires `linklist.h`)
+- Queue: `queue_t` (requires `linklist.h`)
+- Max heap: `hp_t` (requires `math.h`)
 - Binary search tree / AVL tree: `bst_t`
-- Hash table: `hash_t`
+- Hash table: `hash_t` (requires `linklist.h`)
 
 Public headers are in `headers/`, implementations are in `src/`, tests are in `tests/`, and compiled test executables are stored in `bin/`.
 
@@ -63,7 +62,7 @@ Include the header for the structure you need and link its implementation file. 
 stack_t stack;
 int value = 42;
 
-stack_init(&stack, 8, sizeof(value), NULL);
+stack_init(&stack, sizeof(value), NULL);
 stack_push(&stack, &value);
 stack_free(&stack);
 ```

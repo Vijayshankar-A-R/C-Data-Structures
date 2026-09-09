@@ -27,7 +27,7 @@ static void test_int_stack(void) {
     int out = 0;
 
     printf("[dbg] testing int stack with NULL free callback\n");
-    check(stack_init(&st, sizeof(int), 0, NULL) == 1, "stack_init for ints");
+    check(stack_init(&st, sizeof(int), NULL) == 1, "stack_init for ints");
     check(stack_isempty(&st) == 1, "new int stack is empty");
 
     for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
@@ -51,7 +51,7 @@ static void test_struct_stack(void) {
     person_t out;
 
     printf("[dbg] testing struct stack with print callback\n");
-    check(stack_init(&st, sizeof(person_t), 0, print_free) == 1, "stack_init for structs");
+    check(stack_init(&st, sizeof(person_t), print_free) == 1, "stack_init for structs");
     check(stack_push(&st, &people[0]) == 1, "push struct 1");
     check(stack_push(&st, &people[1]) == 1, "push struct 2");
     check(stack_push(&st, &people[2]) == 1, "push struct 3");
