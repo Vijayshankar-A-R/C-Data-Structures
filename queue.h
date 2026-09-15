@@ -13,14 +13,15 @@
 
 typedef double_ll_t queue_t;
 
-int	q_init(queue_t *q, size_t elem_sz, void (*free_ele)(void *));
+int	    q_init(queue_t *q, size_t elem_sz, void (*free_ele)(void *));
 void	q_free(queue_t *q);
 
-int	q_isempty(const queue_t *q);
+int	    q_isempty(const queue_t *q);
 size_t	q_size(const queue_t *q);
 
 int	enqueue(queue_t *q, const void *elem);
 int	dequeue(queue_t *q, void *out);
+int peek(queue_t *q, void *out);
 
 #ifdef QUEUE_IMPLEMENTATION
 
@@ -48,6 +49,9 @@ int enqueue(queue_t *q, const void *elem) {
 int dequeue(queue_t *q, void *out) {
 	return dll_deletehead(q, out);
 }
+
+int peek(queue_t *q, void *out) {
+    return dll_gethead(q, out);
 
 #endif // QUEUE_IMPLEMENTATION
 #endif // QUEUE_H
