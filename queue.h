@@ -52,6 +52,6 @@ int dequeue(queue_t *q, void *out) {
 
 int peek(queue_t *q, void *out) {
     return dll_gethead(q, out);
-
+}
 #endif // QUEUE_IMPLEMENTATION
 #endif // QUEUE_H
