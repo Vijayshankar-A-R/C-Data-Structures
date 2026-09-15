@@ -131,7 +131,7 @@ int ll_insert(linklist_t *l, size_t i, const void *elem) {
 	if (i == 0) return ll_inserthead(l, elem);
 
 	ll_node *prev;
-	for (prev =l->head; --i; prev = prev ? prev->next : NULL);
+	for (prev =l->head; prev && --i; prev = prev ? prev->next : NULL);
 	if (!prev) return 0;
 
 	ll_node *n = __ll_create_node(elem, l->elem_sz);
@@ -173,7 +173,7 @@ int ll_delete(linklist_t *l, size_t i, void *out_elem) {
 	if (i == 0) return ll_deletehead(l, out_elem);
 
 	ll_node *prev, *tmp;
-	for (prev = l->head; --i; prev = prev ? prev->next : NULL);
+	for (prev = l->head; prev && --i; prev = prev ? prev->next : NULL);
 	if (!prev) return 0;
 
 	tmp = prev->next;
@@ -204,7 +204,7 @@ int ll_getelem(const linklist_t *l, size_t i, void *out_elem) {
 	if (i == 0) return ll_gethead(l, out_elem);
 
 	const ll_node *n;
-	for (n = l->head; i--; n = n ? n->next : NULL);
+	for (n = l->head; n && i--; n = n ? n->next : NULL);
 	if (!n) return 0;
 
 	memcpy(out_elem, n->data, l->elem_sz);
