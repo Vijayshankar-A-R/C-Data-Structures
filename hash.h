@@ -4,42 +4,43 @@
 #define HASH_H
 
 #ifdef HASH_IMPLEMENTATION
-	#ifndef LL_IMPLEMENTATION
-		#define LL_IMPLEMENTATION
-	#endif // LL_IMPLEMENTATION
+#ifndef LL_IMPLEMENTATION
+#define LL_IMPLEMENTATION
+#endif // LL_IMPLEMENTATION
 #endif // HASH_IMPLEMENTATION
 
 #include "linklist.h"
 
 typedef struct hash_t hash_t;
 
-int	ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets, void (*key_free)(void *), void (*val_free)(void *));
-void	ht_free(hash_t *h);
+int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
+            void (*key_free)(void *), void (*val_free)(void *));
+void ht_free(hash_t *h);
 
-int	ht_put(hash_t *h, const void *key, const void *val);
-int	ht_get(const hash_t *h, const void *key, void *out);
-int	ht_rem(hash_t *h, const void *key);
+int ht_put(hash_t *h, const void *key, const void *val);
+int ht_get(const hash_t *h, const void *key, void *out);
+int ht_rem(hash_t *h, const void *key);
 
 #ifdef HASH_IMPLEMENTATION
 
 struct __ctx {
-		void (*key_free)(void *);
-		void (*val_free)(void *);
+    void (*key_free)(void *);
+    void (*val_free)(void *);
 };
 
 typedef struct __entry_t __entry_t;
-struct __entry_t{
-	void 	*key;
-	void 	*val;
-	struct __ctx *ctx;
+struct __entry_t {
+    void *key;
+    void *val;
+    struct __ctx *ctx;
 };
 
-struct hash_t{
-	linklist_t *arr;	// hash_t is an array of linked-list of __entry_t
-	size_t 	key_sz;
-	size_t	val_sz;
-	size_t	buckets;
-	struct __ctx __ctx;
+struct hash_t {
+    linklist_t *arr; // hash_t is an array of linked-list of __entry_t
+    size_t key_sz;
+    size_t val_sz;
+    size_t buckets;
+    struct __ctx __ctx;
 };
 
 #include <stdlib.h>
@@ -47,109 +48,124 @@ struct hash_t{
 
 // djb2 hash
 static size_t __hash(const void *key, size_t size) {
-	const unsigned char *p = key;
-	size_t h = 5381;
+    const unsigned char *p = key;
+    size_t h = 5381;
 
-	for (size_t i = 0; i < size; i++)
-		h = ((h << 5) + h) + p[i];
-	return h;
+    for (size_t i = 0; i < size; i++)
+        h = ((h << 5) + h) + p[i];
+    return h;
 }
 
-int __create_entry(const void *key, const void *val, size_t key_sz, size_t val_sz, __entry_t *out, struct __ctx *ctx) {
-	if (!key || !val || !out) return 0;
+int __create_entry(const void *key, const void *val, size_t key_sz,
+                   size_t val_sz, __entry_t *out, struct __ctx *ctx) {
+    if (!key || !val || !out)
+        return 0;
 
-	out->key = malloc(key_sz);
-	if (!out->key) return 0;
-	memcpy(out->key, key, key_sz);
+    out->key = malloc(key_sz);
+    if (!out->key)
+        return 0;
+    memcpy(out->key, key, key_sz);
 
-	out->val = malloc(val_sz);
-	if (!out->val) {
-		free(out->key);
-		return 0;
-	}
-	memcpy(out->val, val, val_sz);
+    out->val = malloc(val_sz);
+    if (!out->val) {
+        free(out->key);
+        return 0;
+    }
+    memcpy(out->val, val, val_sz);
 
-	out->ctx = ctx;
+    out->ctx = ctx;
 
-	return 1;
+    return 1;
 }
 
 void __destroy_entry(void *p) {
-	__entry_t *entry = (__entry_t *)p;
+    __entry_t *entry = (__entry_t *)p;
 
-	if (!entry) return;
-	if (entry->ctx->key_free) entry->ctx->key_free(entry->key);
-	free(entry->key);
-	if (entry->ctx->val_free) entry->ctx->val_free(entry->val);
-	free(entry->val);
+    if (!entry)
+        return;
+    if (entry->ctx->key_free)
+        entry->ctx->key_free(entry->key);
+    free(entry->key);
+    if (entry->ctx->val_free)
+        entry->ctx->val_free(entry->val);
+    free(entry->val);
 }
 
-int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets, void (*key_free)(void *), void (*val_free)(void *)) {
-	if (!h || buckets == 0 || key_sz == 0 || val_sz == 0) return 0;
+int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
+            void (*key_free)(void *), void (*val_free)(void *)) {
+    if (!h || buckets == 0 || key_sz == 0 || val_sz == 0)
+        return 0;
 
-	linklist_t *arr = (linklist_t *)calloc(buckets, sizeof(linklist_t));
-	if (!arr) return 0;
+    linklist_t *arr = (linklist_t *)calloc(buckets, sizeof(linklist_t));
+    if (!arr)
+        return 0;
 
-	for (size_t i = 0; i < buckets; ++i)
-		if (!ll_init(&arr[i], sizeof(__entry_t), __destroy_entry)) {
-			for (size_t j = 0; j < i; ++j) ll_free(&arr[j]);
-			free(arr);
-			return 0;
-		}
+    for (size_t i = 0; i < buckets; ++i)
+        if (!ll_init(&arr[i], sizeof(__entry_t), __destroy_entry)) {
+            for (size_t j = 0; j < i; ++j)
+                ll_free(&arr[j]);
+            free(arr);
+            return 0;
+        }
 
-	h->arr = arr;
-	h->key_sz = key_sz;
-	h->val_sz = val_sz;
-	h->buckets = buckets;
-	h->__ctx = (struct __ctx){key_free, val_free};
-	return 1;
+    h->arr = arr;
+    h->key_sz = key_sz;
+    h->val_sz = val_sz;
+    h->buckets = buckets;
+    h->__ctx = (struct __ctx){key_free, val_free};
+    return 1;
 }
 
 void ht_free(hash_t *h) {
-	if (!h) return;
-	for (size_t i = 0; i < h->buckets; ++i) ll_free(&h->arr[i]);
-	free(h->arr);
+    if (!h)
+        return;
+    for (size_t i = 0; i < h->buckets; ++i)
+        ll_free(&h->arr[i]);
+    free(h->arr);
 
-	h->arr = NULL;
-	h->key_sz = 0;
-	h->val_sz = 0;
-	h->buckets = 0;
-	h->__ctx = (struct __ctx){NULL, NULL};
+    h->arr = NULL;
+    h->key_sz = 0;
+    h->val_sz = 0;
+    h->buckets = 0;
+    h->__ctx = (struct __ctx){NULL, NULL};
 }
 
 int ht_put(hash_t *h, const void *key, const void *val) {
-	size_t i = __hash(key, h->key_sz) % h->buckets;
-	if (ht_get(h, key, NULL)) return 0; // key is already occupied
-	__entry_t e;
-	if (!__create_entry(key, val, h->key_sz, h->val_sz, &e, &h->__ctx)) return 0;
-	return ll_inserthead(&h->arr[i], &e);
+    size_t i = __hash(key, h->key_sz) % h->buckets;
+    if (ht_get(h, key, NULL))
+        return 0; // key is already occupied
+    __entry_t e;
+    if (!__create_entry(key, val, h->key_sz, h->val_sz, &e, &h->__ctx))
+        return 0;
+    return ll_inserthead(&h->arr[i], &e);
 }
 
 int ht_get(const hash_t *h, const void *key, void *out) {
-	size_t i = __hash(key, h->key_sz) % h->buckets;
-	linklist_t *l = h->arr + i;
-	for (ll_node *cur = l->head; cur; cur = cur->next) {
-		__entry_t *e = (__entry_t *)cur->data;
-		if (memcmp(e->key, key, h->key_sz) == 0) {
-			if (out) memcpy(out, e->val, h->val_sz);
-			return 1;
-		}
-	}
-	return 0;
+    size_t i = __hash(key, h->key_sz) % h->buckets;
+    linklist_t *l = h->arr + i;
+    for (ll_node *cur = l->head; cur; cur = cur->next) {
+        __entry_t *e = (__entry_t *)cur->data;
+        if (memcmp(e->key, key, h->key_sz) == 0) {
+            if (out)
+                memcpy(out, e->val, h->val_sz);
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int ht_rem(hash_t *h, const void *key) {
-	size_t i = __hash(key, h->key_sz) % h->buckets;
-        linklist_t *l = h->arr + i;
-	int j = 0;
-        for (ll_node *cur = l->head; cur; cur = cur->next, j++) {
-            __entry_t *e = (__entry_t *)cur->data;
-			if (memcmp(e->key, key, h->key_sz) == 0) {
-				__entry_t removed;
-				return ll_delete(l, j, &removed);
-			}
+    size_t i = __hash(key, h->key_sz) % h->buckets;
+    linklist_t *l = h->arr + i;
+    int j = 0;
+    for (ll_node *cur = l->head; cur; cur = cur->next, j++) {
+        __entry_t *e = (__entry_t *)cur->data;
+        if (memcmp(e->key, key, h->key_sz) == 0) {
+            __entry_t removed;
+            return ll_delete(l, j, &removed);
         }
-        return 0;
+    }
+    return 0;
 }
 
 #endif // HASH_IMPLEMENTATION
