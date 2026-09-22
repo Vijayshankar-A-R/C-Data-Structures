@@ -1,0 +1,27 @@
+name: DSA Tests
+
+on:
+  push:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and run tests
+        shell: bash
+        run: |
+          mkdir -p bin
+
+          for source in tests/*.c; do
+            name="$(basename "$source" .c)"
+
+            gcc -Wall -Wextra -std=c11 -I. "$source" \
+              -lm -o "bin/$name"
+
+            "./bin/$name"
+          done
+
