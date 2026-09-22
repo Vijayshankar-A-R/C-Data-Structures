@@ -26,14 +26,21 @@ static void val_free(void *p) {
 
 static void test_key_val_free(void) {
     hash_t h;
-    const char *keys[] = {"one", "two"};
-    const char *values[] = {"uno", "dos"};
+    char keys[2][4];
+    char values[2][4];
     char out[16];
+
+    strcpy(keys[0], "one");
+    strcpy(keys[1], "two");
+    strcpy(values[0], "uno");
+    strcpy(values[1], "dos");
 
     freed_keys = 0;
     freed_vals = 0;
 
-    check(ht_init(&h, 16, 16, 3, key_free, val_free) == 1, "ht_init with key_free and val_free");
+    check(ht_init(&h, sizeof(keys[0]), sizeof(values[0]), 3, key_free,
+                  val_free) == 1,
+          "ht_init with key_free and val_free");
 
     check(ht_put(&h, keys[0], values[0]) == 1, "put one");
     check(ht_put(&h, keys[1], values[1]) == 1, "put two");
