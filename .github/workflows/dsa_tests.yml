@@ -20,13 +20,24 @@ jobs:
           for source in tests/*.c; do
             name="$(basename "$source" .c)"
             echo "::group::$name"
+            echo "Building $name..."
 
-            gcc -Wall -Wextra -std=c11 -g -O1 \
+            if ! gcc -Wall -Wextra -std=gnu2x -g -O1 \
               -fsanitize=address,undefined \
               -fno-omit-frame-pointer \
-              -I. "$source" -lm -o "bin/$name"
+              -I. "$source" -lm -o "bin/$name"; then
+              echo "BUILD FAILED: $name"
+              echo "::endgroup::"
+              exit 1
+            fi
 
-            "./bin/$name"
+            echo "Running $name..."
+            if ! "./bin/$name"; then
+              echo "TEST FAILED: $name"
+              echo "::endgroup::"
+              exit 1
+            fi
 
+            echo "PASSED: $name"
             echo "::endgroup::"
           done
