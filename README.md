@@ -12,13 +12,41 @@ A collection of generic data structures implemented in C. Elements are stored as
 - Max heap: `hp_t` (requires `math.h`)
 - Binary search tree / AVL tree: `bst_t`
 - Hash table: `hash_t` (requires `linklist.h`)
+- Sorting algorithms: insertion, selection, merge, bubble, and quick sort
 
-The project uses stb-style single-header implementations. Each header contains its public API and the implementation behind a matching `*_IMPLEMENTATION` define, so the typical pattern is:
+The project uses stb-style single-header implementations. Each header contains its public API and the implementation behind a preprocessor define, so the typical pattern is:
 
 ```c
 #define BST_IMPLEMENTATION
 #include "bst.h"
 ```
+
+`sort.h` uses one define per algorithm because its implementations are independent:
+
+```c
+#define INSERT_SORT_IMPL
+#define SELECT_SORT_IMPL
+#define MERGE_SORT_IMPL
+#define BUBBLE_SORT_IMPL
+#define QUICK_SORT_IMPL
+#include "sort.h"
+```
+
+The available sort functions all have this signature:
+
+```c
+void sort_name(void *base, size_t nmemb, size_t size,
+			   int (*cmp)(const void *, const void *));
+```
+
+`base` points to the first element, `nmemb` is the element count, and `size` is
+the size of one element in bytes. The comparator follows the standard `qsort`
+convention: return a negative value when the first element is smaller, zero
+when they compare equal, and a positive value when it is larger.
+
+Internally, quick sort's `partition()` helper returns `0x0BAD` when it cannot
+allocate its temporary swap buffer. `quick_sort()` treats this as an allocation
+failure and stops; the public sort functions do not return an error code.
 
 The headers live at the repository root, and test programs are in `tests/` with compiled executables stored in `bin/`.
 
@@ -46,6 +74,13 @@ Build an individual test from the repository root:
 ```sh
 gcc -Wall -Wextra -I. tests/bst_test.c -o bin/bst_test
 bin/bst_test
+```
+
+Run the sort test from the repository root with:
+
+```sh
+gcc -Wall -Wextra -I. tests/sort_test.c -o bin/sort_test
+bin/sort_test
 ```
 
 The test source already defines the matching implementation macro before including the header:
@@ -97,7 +132,7 @@ For comparison-based structures (`hp_t` and `bst_t`), provide a comparator using
 ```text
 *.h        stb-style single-header implementations
 tests/     Test programs
-bin/      Compiled test executables
+bin/       Compiled test executables
 ```
 
 ## AI Notice
