@@ -194,6 +194,8 @@ void bubble_sort(void *base, size_t nmemb, size_t size,
         if (!swapped)
             break;
     }
+
+    free(tmp);
 }
 
 #endif // BUBBLE_SORT_IMPL
