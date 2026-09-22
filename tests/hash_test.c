@@ -58,11 +58,19 @@ static void test_hash_collision(void) {
 
 static void test_string_hash(void) {
     hash_t h;
-    const char *keys[] = {"apple", "banana", "cherry"};
-    const char *values[] = {"red", "yellow", "dark red"};
+    char keys[3][7];
+    char values[3][9];
     char out[16];
 
-    check(ht_init(&h, strlen(keys[0]) + 1, sizeof(out), 5, NULL, NULL) == 1, "ht_init for strings");
+    strcpy(keys[0], "apple");
+    strcpy(keys[1], "banana");
+    strcpy(keys[2], "cherry");
+    strcpy(values[0], "red");
+    strcpy(values[1], "yellow");
+    strcpy(values[2], "dark red");
+
+    check(ht_init(&h, sizeof(keys[0]), sizeof(values[0]), 5, NULL, NULL) == 1,
+          "ht_init for strings");
 
     check(ht_put(&h, keys[0], values[0]) == 1, "put apple");
     check(ht_put(&h, keys[1], values[1]) == 1, "put banana");
