@@ -37,15 +37,20 @@ static size_t bsearch_left(void *base, size_t nmemb, size_t size,
     return l;
 }
 
+static void bswap(void *a, void *b, size_t sz) {
+    unsigned char tmp[sz];
+    memcpy(tmp, a, sz);
+    memcpy(a, b, sz);
+    memcpy(b, tmp, sz);
+}
+
 #ifdef INSERT_SORT_IMPL
 
 void insertion_sort(void *base, size_t nmemb, size_t size,
                     int (*cmp)(const void *, const void *)) {
     if (!base || !cmp || nmemb < 2 || size == 0)
         return;
-    void *tmp = malloc(size);
-    if (!tmp)
-        return;
+    unsigned char tmp[size];
 
     size_t sorted = 1;
 
@@ -59,8 +64,6 @@ void insertion_sort(void *base, size_t nmemb, size_t size,
         memcpy(ELE_ADDR(base, size, i), tmp, size);
         sorted++;
     }
-
-    free(tmp);
 }
 
 #endif // INSERT_SORT_IMPL
@@ -71,9 +74,6 @@ void selection_sort(void *base, size_t nmemb, size_t size,
                     int (*cmp)(const void *, const void *)) {
     if (!base || !cmp || size == 0 || nmemb < 2)
         return;
-    void *tmp = malloc(size);
-    if (!tmp)
-        return;
 
     for (size_t i = 0; i < nmemb - 1; ++i) {
         size_t min_idx = i;
@@ -81,12 +81,8 @@ void selection_sort(void *base, size_t nmemb, size_t size,
             if (cmp(ELE_ADDR(base, size, j), ELE_ADDR(base, size, min_idx)) < 0)
                 min_idx = j;
         // swap arr[i] and arr[min_idx]
-        memcpy(tmp, ELE_ADDR(base, size, i), size);
-        memcpy(ELE_ADDR(base, size, i), ELE_ADDR(base, size, min_idx), size);
-        memcpy(ELE_ADDR(base, size, min_idx), tmp, size);
+        bswap(ELE_ADDR(base, size, i), ELE_ADDR(base, size, min_idx), size);
     }
-
-    free(tmp);
 }
 
 #endif // SELECT_SORT_IMPL
@@ -98,12 +94,8 @@ static void merge_arr(void *base, size_t size, size_t left, size_t middle,
     size_t m, n;
     m = middle - left;
     n = right - middle;
-    void *left_part = malloc(m * size);
-    if (!left_part)
-        return;
-    void *right_part = malloc(n * size);
-    if (!right_part)
-        return free(left_part);
+    unsigned char left_part[m * size];
+    unsigned char right_part[n * size];
 
     memcpy(left_part, ELE_ADDR(base, size, left), m * size);
     memcpy(right_part, ELE_ADDR(base, size, middle), n * size);
@@ -137,9 +129,6 @@ static void merge_arr(void *base, size_t size, size_t left, size_t middle,
         ++j;
         ++k;
     }
-
-    free(left_part);
-    free(right_part);
 }
 
 void merge_sort(void *base, size_t nmemb, size_t size,
@@ -174,19 +163,13 @@ void bubble_sort(void *base, size_t nmemb, size_t size,
     if (!base || !cmp || size == 0)
         return;
 
-    void *tmp = malloc(size);
-    if (!tmp)
-        return;
-
     for (size_t i = 0; i < nmemb; ++i) {
         int swapped = 0;
 
         for (size_t j = 0; j < nmemb - i - 1; ++j) {
             if (cmp(ELE_ADDR(base, size, j), ELE_ADDR(base, size, j + 1)) > 0) {
-                memcpy(tmp, ELE_ADDR(base, size, j), size);
-                memcpy(ELE_ADDR(base, size, j), ELE_ADDR(base, size, j + 1),
-                       size);
-                memcpy(ELE_ADDR(base, size, j + 1), tmp, size);
+                bswap(ELE_ADDR(base, size, j), ELE_ADDR(base, size, j + 1),
+                      size);
                 swapped = 1;
             }
         }
@@ -194,8 +177,6 @@ void bubble_sort(void *base, size_t nmemb, size_t size,
         if (!swapped)
             break;
     }
-
-    free(tmp);
 }
 
 #endif // BUBBLE_SORT_IMPL
@@ -207,24 +188,15 @@ static size_t partition(void *base, size_t size, size_t low, size_t high,
     void *pivot = ELE_ADDR(base, size, high);
     size_t i = low;
 
-    void *tmp = malloc(size);
-    if (!tmp)
-        return 0x0BAD;
-
     for (size_t j = low; j < high; ++j) {
         if (cmp(ELE_ADDR(base, size, j), pivot) <= 0) {
-            memcpy(tmp, ELE_ADDR(base, size, i), size);
-            memcpy(ELE_ADDR(base, size, i), ELE_ADDR(base, size, j), size);
-            memcpy(ELE_ADDR(base, size, j), tmp, size);
+            bswap(ELE_ADDR(base, size, i), ELE_ADDR(base, size, j), size);
             ++i;
         }
     }
 
-    memcpy(tmp, ELE_ADDR(base, size, i), size);
-    memcpy(ELE_ADDR(base, size, i), ELE_ADDR(base, size, high), size);
-    memcpy(ELE_ADDR(base, size, high), tmp, size);
+    bswap(ELE_ADDR(base, size, i), ELE_ADDR(base, size, high), size);
 
-    free(tmp);
     return i;
 }
 
@@ -233,8 +205,6 @@ static void __qsort_rec(void *base, size_t size, size_t low, size_t high,
     if (low >= high)
         return;
     size_t p_idx = partition(base, size, low, high, cmp);
-    if (p_idx == 0x0BAD)
-        return;
     if (p_idx > low)
         __qsort_rec(base, size, low, p_idx - 1, cmp);
     if (p_idx < high)
