@@ -44,10 +44,6 @@ the size of one element in bytes. The comparator follows the standard `qsort`
 convention: return a negative value when the first element is smaller, zero
 when they compare equal, and a positive value when it is larger.
 
-Internally, quick sort's `partition()` helper returns `0x0BAD` when it cannot
-allocate its temporary swap buffer. `quick_sort()` treats this as an allocation
-failure and stops; the public sort functions do not return an error code.
-
 The headers live at the repository root, and test programs are in `tests/` with compiled executables stored in `bin/`.
 
 ## Requirements
