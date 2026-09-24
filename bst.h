@@ -15,6 +15,7 @@ void bst_free(bst_t *b);
 int bst_insert(bst_t *b, const void *elem);
 int bst_delete(bst_t *b, const void *elem);
 int bst_contains(const bst_t *b, const void *elem);
+int bst_get(const bst_t *b, const void *elem, void *out);
 
 // int	bst_preorder(bst_t *b, void *out);
 // int	bst_inorder(bst_t *b, void *out);
@@ -214,6 +215,28 @@ int bst_contains(const bst_t *b, const void *elem) {
     if (!b)
         return 0;
     return __rec_contains(b->root, elem, b->cmp);
+}
+
+static int __rec_get(const bst_node *n, const void *elem,
+                          int (*cmp)(const void *, const void *), void *out, size_t elem_sz) {
+    if (!n)
+        return 0;
+    int k = cmp(elem, n->val);
+    if (k == 0) {
+        memcpy(out, n->val, elem_sz);
+        return 1;
+    }
+    if (k > 0)
+        return __rec_get(n->right, elem, cmp, out, elem_sz);
+    if (k < 0)
+        return __rec_get(n->left, elem, cmp, out, elem_sz);
+    __builtin_unreachable();
+}
+
+int bst_get(const bst_t *b, const void *elem, void *out) {
+    if (!b)
+        return 0;
+    return __rec_get(b->root, elem, b->cmp, out, b->elem_sz);
 }
 
 static bst_node *__rec_delete(bst_node *n, const void *elem, size_t elem_sz,

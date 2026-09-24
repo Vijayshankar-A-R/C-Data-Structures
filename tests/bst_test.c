@@ -38,8 +38,13 @@ static void test_int_bst(void) {
     int x = 7;
     check(bst_contains(&tree, &x) == 1, "tree contains 7");
 
+    int got = 0;
+    check(bst_get(&tree, &x, &got) == 1, "bst_get finds 7");
+    check(got == 7, "bst_get copies 7 into output");
+
     int y = 20;
     check(bst_contains(&tree, &y) == 0, "tree does not contain 20");
+    check(bst_get(&tree, &y, &got) == 0, "bst_get rejects missing 20");
 
     check(bst_delete(&tree, &vals[1]) == 1, "bst_delete returns 1 for existing element");
     check(bst_contains(&tree, &vals[1]) == 0, "5 removed from tree");
