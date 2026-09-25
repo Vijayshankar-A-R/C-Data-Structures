@@ -49,7 +49,7 @@ struct hash_t {
 #include <string.h>
 
 // djb2 hash
-static size_t __hash(const void *key, size_t size) {
+size_t __hash(const void *key, size_t size) {
     const unsigned char *p = key;
     size_t h = 5381;
 
