@@ -90,7 +90,7 @@ static double stress_hash(size_t buckets) {
     printf("[debug] hash test starting: %zu buckets\n", buckets);
     fflush(stdout);
     debug_message("hash initialization starting");
-    check(ht_init(&hash, sizeof(int), sizeof(int), buckets, NULL, NULL), "hash initialization");
+    check(ht_init(&hash, sizeof(int), sizeof(int), buckets, NULL, NULL, NULL), "hash initialization");
     debug_message("hash initialization complete");
     for (int i = 0; i < HASH_ITEMS; ++i) {
         value = i * 3;

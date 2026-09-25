@@ -14,7 +14,8 @@
 typedef struct hash_t hash_t;
 
 int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
-            void (*key_free)(void *), void (*val_free)(void *));
+            void (*key_free)(void *), void (*val_free)(void *),
+            size_t (*hash)(const void *, size_t));
 void ht_free(hash_t *h);
 
 int ht_put(hash_t *h, const void *key, const void *val);
@@ -41,6 +42,7 @@ struct hash_t {
     size_t val_sz;
     size_t buckets;
     struct __ctx __ctx;
+    size_t (*hash_fn)(const void *, size_t);
 };
 
 #include <stdlib.h>
@@ -92,7 +94,8 @@ void __destroy_entry(void *p) {
 }
 
 int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
-            void (*key_free)(void *), void (*val_free)(void *)) {
+            void (*key_free)(void *), void (*val_free)(void *),
+            size_t (*hash)(const void *, size_t)) {
     if (!h || buckets == 0 || key_sz == 0 || val_sz == 0)
         return 0;
 
@@ -113,6 +116,7 @@ int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
     h->val_sz = val_sz;
     h->buckets = buckets;
     h->__ctx = (struct __ctx){key_free, val_free};
+    h->hash_fn = hash ? hash : __hash;
     return 1;
 }
 
@@ -131,7 +135,7 @@ void ht_free(hash_t *h) {
 }
 
 int ht_put(hash_t *h, const void *key, const void *val) {
-    size_t i = __hash(key, h->key_sz) % h->buckets;
+    size_t i = h->hash_fn(key, h->key_sz) % h->buckets;
     if (ht_get(h, key, NULL))
         return 0; // key is already occupied
     __entry_t e;
@@ -141,7 +145,7 @@ int ht_put(hash_t *h, const void *key, const void *val) {
 }
 
 int ht_get(const hash_t *h, const void *key, void *out) {
-    size_t i = __hash(key, h->key_sz) % h->buckets;
+    size_t i = h->hash_fn(key, h->key_sz) % h->buckets;
     linklist_t *l = h->arr + i;
     for (ll_node *cur = l->head; cur; cur = cur->next) {
         __entry_t *e = (__entry_t *)cur->data;
@@ -155,7 +159,7 @@ int ht_get(const hash_t *h, const void *key, void *out) {
 }
 
 int ht_rem(hash_t *h, const void *key) {
-    size_t i = __hash(key, h->key_sz) % h->buckets;
+    size_t i = h->hash_fn(key, h->key_sz) % h->buckets;
     linklist_t *l = h->arr + i;
     int j = 0;
     for (ll_node *cur = l->head; cur; cur = cur->next, j++) {
