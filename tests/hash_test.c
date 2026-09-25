@@ -12,6 +12,7 @@ static void check(int condition, const char *message) {
 }
 
 static int custom_hash_calls;
+static int custom_cmp_calls;
 
 static size_t constant_hash(const void *key, size_t size) {
     (void)key;
@@ -20,13 +21,19 @@ static size_t constant_hash(const void *key, size_t size) {
     return 0;
 }
 
+static int integer_cmp(const void *left, const void *right, size_t size) {
+    (void)size;
+    custom_cmp_calls++;
+    return *(const int *)left != *(const int *)right;
+}
+
 static void test_int_hash(void) {
     hash_t h;
     int keys[] = {1, 2, 3};
     int values[] = {100, 200, 300};
     int out = 0;
 
-        check(ht_init(&h, sizeof(int), sizeof(int), 3, NULL, NULL, NULL) == 1,
+        check(ht_init(&h, sizeof(int), sizeof(int), 3, NULL, NULL) == 1,
                     "ht_init for ints");
 
     check(ht_put(&h, &keys[0], &values[0]) == 1, "put key 1");
@@ -51,7 +58,7 @@ static void test_hash_collision(void) {
     int values[] = {400, 800};
     int out = 0;
 
-        check(ht_init(&h, sizeof(int), sizeof(int), 1, NULL, NULL, NULL) == 1,
+        check(ht_init(&h, sizeof(int), sizeof(int), 1, NULL, NULL) == 1,
                     "ht_init with single bucket");
 
     check(ht_put(&h, &keys[0], &values[0]) == 1, "put key 4");
@@ -80,7 +87,7 @@ static void test_string_hash(void) {
     strcpy(values[1], "yellow");
     strcpy(values[2], "dark red");
 
-    check(ht_init(&h, sizeof(keys[0]), sizeof(values[0]), 5, NULL, NULL, NULL) == 1,
+    check(ht_init(&h, sizeof(keys[0]), sizeof(values[0]), 5, NULL, NULL) == 1,
           "ht_init for strings");
 
     check(ht_put(&h, keys[0], values[0]) == 1, "put apple");
@@ -104,9 +111,9 @@ static void test_custom_hash(void) {
     int out = 0;
 
     custom_hash_calls = 0;
-    check(ht_init(&h, sizeof(int), sizeof(int), 4, NULL, NULL,
-                  constant_hash) == 1,
-          "ht_init with custom hash");
+        check(ht_init(&h, sizeof(int), sizeof(int), 4, NULL, NULL) == 1,
+            "ht_init for custom hash");
+        set_hash(&h, constant_hash);
 
     check(ht_put(&h, &keys[0], &values[0]) == 1, "custom hash put key 10");
     check(ht_put(&h, &keys[1], &values[1]) == 1, "custom hash put key 20");
@@ -131,11 +138,36 @@ static void test_custom_hash(void) {
     ht_free(&h);
 }
 
+    static void test_custom_cmp(void) {
+        hash_t h;
+        int keys[] = {10, 20};
+        int values[] = {1000, 2000};
+        int lookup = 20;
+        int out = 0;
+
+        custom_cmp_calls = 0;
+        check(ht_init(&h, sizeof(int), sizeof(int), 3, NULL, NULL) == 1,
+            "ht_init for custom comparator");
+        set_cmp(&h, integer_cmp);
+
+        check(ht_put(&h, &keys[0], &values[0]) == 1, "custom cmp put key 10");
+        check(ht_put(&h, &keys[1], &values[1]) == 1, "custom cmp put key 20");
+        check(ht_get(&h, &lookup, &out) == 1 && out == 2000,
+            "custom cmp get key 20");
+        check(ht_rem(&h, &lookup) == 1, "custom cmp remove key 20");
+        check(ht_get(&h, &lookup, &out) == 0,
+            "custom cmp get removed key 20 fails");
+        check(custom_cmp_calls > 0, "custom comparator is used");
+
+        ht_free(&h);
+    }
+
 int main(void) {
     test_int_hash();
     test_hash_collision();
     test_string_hash();
     test_custom_hash();
+    test_custom_cmp();
     puts("All hash tests passed.");
     return 0;
 }

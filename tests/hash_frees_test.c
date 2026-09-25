@@ -39,7 +39,7 @@ static void test_key_val_free(void) {
     freed_vals = 0;
 
     check(ht_init(&h, sizeof(keys[0]), sizeof(values[0]), 3, key_free,
-                  val_free, NULL) == 1,
+                  val_free) == 1,
           "ht_init with key_free and val_free");
 
     check(ht_put(&h, keys[0], values[0]) == 1, "put one");

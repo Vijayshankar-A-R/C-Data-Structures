@@ -14,8 +14,9 @@
 typedef struct hash_t hash_t;
 
 int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
-            void (*key_free)(void *), void (*val_free)(void *),
-            size_t (*hash)(const void *, size_t));
+            void (*key_free)(void *), void (*val_free)(void *));
+void set_hash(hash_t *h, size_t (*hash)(const void *, size_t));
+void set_cmp(hash_t *h, int (*cmp)(const void *, const void *, size_t));
 void ht_free(hash_t *h);
 
 int ht_put(hash_t *h, const void *key, const void *val);
@@ -43,6 +44,7 @@ struct hash_t {
     size_t buckets;
     struct __ctx __ctx;
     size_t (*hash_fn)(const void *, size_t);
+    int (*cmp_fn)(const void *, const void *, size_t);
 };
 
 #include <stdlib.h>
@@ -94,8 +96,7 @@ void __destroy_entry(void *p) {
 }
 
 int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
-            void (*key_free)(void *), void (*val_free)(void *),
-            size_t (*hash)(const void *, size_t)) {
+            void (*key_free)(void *), void (*val_free)(void *)) {
     if (!h || buckets == 0 || key_sz == 0 || val_sz == 0)
         return 0;
 
@@ -116,8 +117,17 @@ int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
     h->val_sz = val_sz;
     h->buckets = buckets;
     h->__ctx = (struct __ctx){key_free, val_free};
-    h->hash_fn = hash ? hash : __hash;
+    h->hash_fn = __hash;
+    h->cmp_fn = memcmp;
     return 1;
+}
+
+void set_hash(hash_t *h, size_t (*hash)(const void *, size_t)) {
+    if (hash) h->hash_fn = hash;
+}
+
+void set_cmp(hash_t *h, int (*cmp)(const void *, const void *, size_t)) {
+    if (cmp) h->cmp_fn = cmp;
 }
 
 void ht_free(hash_t *h) {
@@ -149,7 +159,7 @@ int ht_get(const hash_t *h, const void *key, void *out) {
     linklist_t *l = h->arr + i;
     for (ll_node *cur = l->head; cur; cur = cur->next) {
         __entry_t *e = (__entry_t *)cur->data;
-        if (memcmp(e->key, key, h->key_sz) == 0) {
+        if (h->cmp_fn(e->key, key, h->key_sz) == 0) {
             if (out)
                 memcpy(out, e->val, h->val_sz);
             return 1;
@@ -164,7 +174,7 @@ int ht_rem(hash_t *h, const void *key) {
     int j = 0;
     for (ll_node *cur = l->head; cur; cur = cur->next, j++) {
         __entry_t *e = (__entry_t *)cur->data;
-        if (memcmp(e->key, key, h->key_sz) == 0) {
+        if (h->cmp_fn(e->key, key, h->key_sz) == 0) {
             __entry_t removed;
             return ll_delete(l, j, &removed);
         }
