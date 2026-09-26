@@ -12,6 +12,7 @@ A collection of generic data structures implemented in C. Elements are stored as
 - Max heap: `hp_t` (requires `math.h`)
 - Binary search tree / AVL tree: `bst_t`
 - Hash table: `hash_t` (requires `linklist.h`)
+- Set: `set_t` (requires `hash.h`)
 - Sorting algorithms: insertion, selection, merge, bubble, and quick sort
 
 The project uses stb-style single-header implementations. Each header contains its public API and the implementation behind a preprocessor define, so the typical pattern is:
