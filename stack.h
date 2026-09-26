@@ -2,15 +2,9 @@
 #ifndef STACK_H
 #define STACK_H
 
-#ifdef STACK_IMPLEMENTATION
-#ifndef LL_IMPLEMENTATION
-#define LL_IMPLEMENTATION
-#endif // LL_IMPLEMENTATION
-#endif // STACK_IMPLEMENTATION
+#include <stddef.h> // size_t
 
-#include "linklist.h"
-
-typedef linklist_t stack_t;
+typedef struct linklist_t stack_t;
 
 int stack_init(stack_t *s, size_t elem_sz, void (*free_ele)(void *));
 void stack_free(stack_t *s);
@@ -22,6 +16,14 @@ int stack_pop(stack_t *s, void *out);
 int stack_peek(const stack_t *s, void *out);
 
 #ifdef STACK_IMPLEMENTATION
+
+#ifdef STACK_IMPLEMENTATION
+#ifndef LL_IMPLEMENTATION
+#define LL_IMPLEMENTATION
+#endif // LL_IMPLEMENTATION
+#endif // STACK_IMPLEMENTATION
+
+#include "linklist.h"
 
 int stack_init(stack_t *s, size_t elem_sz, void (*free_ele)(void *)) {
     return ll_init(s, elem_sz, free_ele);

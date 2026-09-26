@@ -3,15 +3,9 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#ifdef QUEUE_IMPLEMENTATION
-#ifndef DLL_IMPLEMENTATION
-#define DLL_IMPLEMENTATION
-#endif // DLL_IMPLEMENTATION
-#endif // QUEUE_IMPLEMENTATION
+#include <stddef.h> // size_t
 
-#include "double_ll.h"
-
-typedef double_ll_t queue_t;
+typedef struct double_ll_t queue_t;
 
 int q_init(queue_t *q, size_t elem_sz, void (*free_ele)(void *));
 void q_free(queue_t *q);
@@ -24,6 +18,14 @@ int dequeue(queue_t *q, void *out);
 int peek(const queue_t *q, void *out);
 
 #ifdef QUEUE_IMPLEMENTATION
+
+#ifdef QUEUE_IMPLEMENTATION
+#ifndef DLL_IMPLEMENTATION
+#define DLL_IMPLEMENTATION
+#endif // DLL_IMPLEMENTATION
+#endif // QUEUE_IMPLEMENTATION
+
+#include "double_ll.h"
 
 int q_init(queue_t *q, size_t elem_sz, void (*free_ele)(void *)) {
     return dll_init(q, elem_sz, free_ele);

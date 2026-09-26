@@ -3,8 +3,6 @@
 #define SORT_H
 
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 
 void insertion_sort(void *base, size_t nmemb, size_t size,
                     int (*cmp)(const void *, const void *));
@@ -18,8 +16,19 @@ void quick_sort(void *base, size_t nmemb, size_t size,
                 int (*cmp)(const void *, const void *));
 #endif // SORT_H
 
+#include <string.h>
+
 #define ELE_ADDR(arr, sz, idx)                                                 \
     ((void *)((unsigned char *)(arr) + ((size_t)(idx) * (size_t)(sz))))
+
+static void bswap(void *a, void *b, size_t sz) {
+    unsigned char tmp[sz];
+    memcpy(tmp, a, sz);
+    memcpy(a, b, sz);
+    memcpy(b, tmp, sz);
+}
+
+#ifdef INSERT_SORT_IMPL
 
 static size_t bsearch_left(void *base, size_t nmemb, size_t size,
                            int (*cmp)(const void *, const void *),
@@ -36,15 +45,6 @@ static size_t bsearch_left(void *base, size_t nmemb, size_t size,
     }
     return l;
 }
-
-static void bswap(void *a, void *b, size_t sz) {
-    unsigned char tmp[sz];
-    memcpy(tmp, a, sz);
-    memcpy(a, b, sz);
-    memcpy(b, tmp, sz);
-}
-
-#ifdef INSERT_SORT_IMPL
 
 void insertion_sort(void *base, size_t nmemb, size_t size,
                     int (*cmp)(const void *, const void *)) {

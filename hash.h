@@ -3,13 +3,7 @@
 #ifndef HASH_H
 #define HASH_H
 
-#ifdef HASH_IMPLEMENTATION
-#ifndef LL_IMPLEMENTATION
-#define LL_IMPLEMENTATION
-#endif // LL_IMPLEMENTATION
-#endif // HASH_IMPLEMENTATION
-
-#include "linklist.h"
+#include <stddef.h>
 
 typedef struct hash_t hash_t;
 
@@ -24,6 +18,14 @@ int ht_get(const hash_t *h, const void *key, void *out);
 int ht_rem(hash_t *h, const void *key);
 
 #ifdef HASH_IMPLEMENTATION
+
+#ifdef HASH_IMPLEMENTATION
+#ifndef LL_IMPLEMENTATION
+#define LL_IMPLEMENTATION
+#endif // LL_IMPLEMENTATION
+#endif // HASH_IMPLEMENTATION
+
+#include "linklist.h"
 
 struct __ctx {
     void (*key_free)(void *);
@@ -123,11 +125,13 @@ int ht_init(hash_t *h, size_t key_sz, size_t val_sz, size_t buckets,
 }
 
 void set_hash(hash_t *h, size_t (*hash)(const void *, size_t)) {
-    if (hash) h->hash_fn = hash;
+    if (hash)
+        h->hash_fn = hash;
 }
 
 void set_cmp(hash_t *h, int (*cmp)(const void *, const void *, size_t)) {
-    if (cmp) h->cmp_fn = cmp;
+    if (cmp)
+        h->cmp_fn = cmp;
 }
 
 void ht_free(hash_t *h) {
