@@ -11,7 +11,7 @@ int set_init(set_t *s, size_t elem_sz, void (*free_ele)(void *));
 // tip: use set_hash set_cmp for more complex datatypes
 
 int set_insert(set_t *s, const void *elem);
-int set_contains(set_t *s, const void *elem);
+int set_contains(const set_t *s, const void *elem);
 int set_remove(set_t *s, const void *elem);
 
 void set_free(set_t *s);
@@ -33,7 +33,7 @@ int set_insert(set_t *s, const void *elem) {
     return ht_put(s, elem, &val);
 }
 
-int set_contains(set_t *s, const void *elem) {
+int set_contains(const set_t *s, const void *elem) {
     return ht_get(s, elem, NULL);
 }
 
