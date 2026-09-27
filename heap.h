@@ -169,9 +169,9 @@ int hp_insert(hp_t *h, const void *elem) {
 }
 
 int hp_peek(const hp_t *h, void *out) {
-    if (!h || !h->root || !out)
+    if (!h || !h->root)
         return 0;
-    memcpy(out, h->root->val, h->elem_sz);
+    if (out) memcpy(out, h->root->val, h->elem_sz);
     return 1;
 }
 
